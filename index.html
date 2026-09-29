@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Paqueterías Internacionales</title>
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+<style>
+
+body{
+    background:linear-gradient(135deg,#0F4C81,#36D1DC);
+    padding:25px;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+h1{
+    color:white;
+    font-weight:bold;
+    text-align:center;
+    margin-bottom:25px;
+}
+
+.panel{
+    border-radius:15px;
+    overflow:hidden;
+    box-shadow:0px 5px 20px rgba(0,0,0,.25);
+}
+
+.panel-heading{
+    background:#0B6E4F !important;
+    color:white !important;
+    font-size:18px;
+    font-weight:bold;
+}
+
+.panel-body{
+    background:white;
+}
+
+.form-control{
+    border-radius:10px;
+}
+
+label{
+    font-weight:bold;
+}
+
+.btn{
+    border-radius:25px;
+    font-weight:bold;
+}
+
+.registro{
+    background:#F8F9FA;
+    border:1px solid #DDD;
+    border-radius:12px;
+    padding:15px;
+    margin-bottom:15px;
+}
+
+#output{
+    height:550px;
+    overflow-y:auto;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container-fluid">
+
+<h1>📦 PAQUETERÍAS INTERNACIONALES</h1>
+
+<div class="row">
+
+<!-- FORMULARIO -->
+
+<div class="col-md-5">
+
+<div class="panel panel-default">
+
+<div class="panel-heading">
+
+Registro de Paquetes
+
+</div>
+
+<div class="panel-body">
+
+<div class="form-group">
+
+<label>Nombre del Registro</label>
+
+<input
+type="text"
+id="usuario"
+class="form-control"
+placeholder="Ejemplo: Registro001">
+
+</div>
+
+<div class="form-group">
+
+<label>Turno</label>
+
+<input
+type="text"
+id="turno"
+class="form-control"
+placeholder="Ejemplo: 1">
+
+</div>
+
+<div class="form-group">
+
+<label>Fecha</label>
+
+<input
+type="date"
+id="fecha"
+class="form-control">
+
+</div>
+
+<div class="form-group">
+
+<label>Nombre del Paquete</label>
+
+<input
+type="text"
+id="paquete"
+class="form-control"
+placeholder="Nombre del paquete">
+
+</div>
+
+<div class="form-group">
+
+<label>Monto de Facturas</label>
+
+<input
+type="text"
+id="facturas"
+class="form-control"
+placeholder="$0.00">
+
+</div>
+
+<div class="form-group">
+
+<label>Nota de Venta</label>
+
+<input
+type="text"
+id="nota"
+class="form-control"
+placeholder="Número de nota">
+
+</div>
+
+<div class="form-group">
+
+<label>Call Center</label>
+
+<input
+type="text"
+id="callcenter"
+class="form-control"
+placeholder="Nombre del operador">
+
+</div>
+
+<br>
+
+<button
+class="btn btn-success btn-block"
+onclick="guardarDatos()">
+
+💾 Guardar Registro
+
+</button>
+
+<br>
+
+<button
+class="btn btn-warning btn-block"
+onclick="limpiarFormulario()">
+
+🧹 Limpiar
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- LISTA -->
+
+<div class="col-md-7">
+
+<div class="panel panel-default">
+
+<div class="panel-heading">
+
+Registros Guardados
+
+<span
+class="badge pull-right"
+id="contador">0</span>
+
+</div>
+
+<div class="panel-body">
+
+<input
+type="text"
+id="buscar"
+class="form-control"
+placeholder="Buscar registro..."
+onkeyup="buscarRegistro()">
+
+<br>
+
+<div id="output">
+
+</div>
+
+</div>
+
+</div>
+
+<button
+class="btn btn-danger btn-block"
+onclick="borrarSeleccionados()">
+
+🗑 Borrar Seleccionados
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+
+import {
+
+getDatabase,
+ref,
+set,
+onValue,
+remove,
+update
+
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+
+const firebaseConfig = {
+
+apiKey:"AIzaSyDt3tIvkce8rJWWunnzL5W8O1MCaYHl2yQ",
+
+authDomain:"bacededato.firebaseapp.com",
+
+projectId:"bacededato",
+
+storageBucket:"bacededato.appspot.com",
+
+messagingSenderId:"422692747871",
+
+appId:"1:422692747871:web:bafbdc63940c4d2fc939ea",
+
+measurementId:"G-NZNGG575K0",
+
+databaseURL:"https://tesis-66c69-default-rtdb.firebaseio.com/"
+
+};
+
+const app = initializeApp(firebaseConfig);
+
+const db = getDatabase(app);
+//=========================================
+// GUARDAR DATOS
+//=========================================
+
+window.guardarDatos = function () {
+
+    let usuario = document.getElementById("usuario").value.trim();
+    let turno = document.getElementById("turno").value.trim();
+    let fecha = document.getElementById("fecha").value;
+    let paquete = document.getElementById("paquete").value.trim();
+    let facturas = document.getElementById("facturas").value.trim();
+    let nota = document.getElementById("nota").value.trim();
+    let callcenter = document.getElementById("callcenter").value.trim();
+
+    if(usuario==""){
+        alert("Escribe el nombre del registro.");
+        return;
+    }
+
+    if(turno==""){
+        alert("Escribe el turno.");
+        return;
+    }
+
+    if(fecha==""){
+        alert("Selecciona la fecha.");
+        return;
+    }
+
+    if(paquete==""){
+        alert("Escribe el nombre del paquete.");
+        return;
+    }
+
+    let datos={
+
+        turno:turno,
+        fecha:fecha,
+        paquete:paquete,
+        facturas:facturas,
+        nota:nota,
+        callcenter:callcenter
+
+    };
+
+    set(ref(db,"paqueterias/"+usuario),datos)
+
+    .then(()=>{
+
+        alert("Registro guardado correctamente.");
+
+        limpiarFormulario();
+
+    })
+
+    .catch((error)=>{
+
+        alert(error);
+
+    });
+
+};
+
+
+
+//=========================================
+// LIMPIAR FORMULARIO
+//=========================================
+
+window.limpiarFormulario=function(){
+
+    document.getElementById("usuario").value="";
+    document.getElementById("turno").value="";
+    document.getElementById("fecha").value="";
+    document.getElementById("paquete").value="";
+    document.getElementById("facturas").value="";
+    document.getElementById("nota").value="";
+    document.getElementById("callcenter").value="";
+
+};
+
+
+
+//=========================================
+// MOSTRAR DATOS EN TIEMPO REAL
+//=========================================
+
+const registrosRef = ref(db,"paqueterias");
+
+onValue(registrosRef,(snapshot)=>{
+
+    let salida="";
+
+    let total=0;
+
+    snapshot.forEach((child)=>{
+
+        total++;
+
+        let nombre=child.key;
+
+        let datos=child.val();
+
+        salida += `
+
+        <div class="registro">
+
+            <h4>
+
+            <input
+            type="checkbox"
+            class="seleccion"
+            value="${nombre}">
+
+            📦 ${nombre}
+
+            </h4>
+
+            <hr>
+
+            <p><b>Turno:</b> ${datos.turno}</p>
+
+            <p><b>Fecha:</b> ${datos.fecha}</p>
+
+            <p><b>Nombre del paquete:</b> ${datos.paquete}</p>
+
+            <p><b>Monto de facturas:</b> ${datos.facturas}</p>
+
+            <p><b>Nota de venta:</b> ${datos.nota}</p>
+
+            <p><b>Call Center:</b> ${datos.callcenter}</p>
+
+            <button
+            class="btn btn-primary btn-xs"
+            onclick="editarRegistro('${nombre}')">
+
+            ✏ Editar
+
+            </button>
+
+        </div>
+
+        `;
+
+    });
+
+    document.getElementById("output").innerHTML=salida;
+
+    document.getElementById("contador").innerHTML=total;
+
+});
+
+
+
+//=========================================
+// BUSCADOR
+//=========================================
+
+window.buscarRegistro=function(){
+
+    let filtro=document.getElementById("buscar").value.toUpperCase();
+
+    let registros=document.getElementsByClassName("registro");
+
+    for(let i=0;i<registros.length;i++){
+
+        let texto=registros[i].innerText.toUpperCase();
+
+        if(texto.indexOf(filtro)>-1){
+
+            registros[i].style.display="";
+
+        }else{
+
+            registros[i].style.display="none";
+
+        }
+
+    }
+
+};
+
+
+
+//=========================================
+// EDITAR
+//=========================================
+
+window.editarRegistro=function(nombre){
+
+    onValue(ref(db,"paqueterias/"+nombre),(snapshot)=>{
+
+        let datos=snapshot.val();
+
+        document.getElementById("usuario").value=nombre;
+        document.getElementById("turno").value=datos.turno;
+        document.getElementById("fecha").value=datos.fecha;
+        document.getElementById("paquete").value=datos.paquete;
+        document.getElementById("facturas").value=datos.facturas;
+        document.getElementById("nota").value=datos.nota;
+        document.getElementById("callcenter").value=datos.callcenter;
+
+    },{
+
+        onlyOnce:true
+
+    });
+
+};
+
+//=========================================
+// BORRAR REGISTROS SELECCIONADOS
+//=========================================
+
+window.borrarSeleccionados = function(){
+
+    let seleccionados = document.querySelectorAll(".seleccion:checked");
+
+    if(seleccionados.length==0){
+
+        alert("Selecciona al menos un registro.");
+
+        return;
+
+    }
+
+    if(confirm("¿Deseas eliminar los registros seleccionados?")){
+
+        seleccionados.forEach((registro)=>{
+
+            remove(ref(db,"paqueterias/"+registro.value));
+
+        });
+
+    }
+
+}
+
+
+
+//=========================================
+// COLOCAR FECHA ACTUAL
+//=========================================
+
+window.onload=function(){
+
+    let hoy=new Date();
+
+    let mes=(hoy.getMonth()+1).toString().padStart(2,"0");
+
+    let dia=hoy.getDate().toString().padStart(2,"0");
+
+    let fecha=hoy.getFullYear()+"-"+mes+"-"+dia;
+
+    document.getElementById("fecha").value=fecha;
+
+}
+
+
+
+//=========================================
+// GUARDAR CON ENTER
+//=========================================
+
+document.addEventListener("keypress",function(e){
+
+    if(e.key=="Enter"){
+
+        guardarDatos();
+
+    }
+
+});
+
+
+
+//=========================================
+// MENSAJE EN CONSOLA
+//=========================================
+
+console.log("====================================");
+
+console.log("PAQUETERÍAS INTERNACIONALES");
+
+console.log("Sistema conectado con Firebase");
+
+console.log("Proyecto listo para trabajar");
+
+console.log("====================================");
+
+</script>
+
+</body>
+
+</html>
